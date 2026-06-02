@@ -13,7 +13,7 @@
 
 ADScan, Microsoft Active Directory ortamlarındaki güvenlik açıklarını tespit etmek için geliştirilmiş taşınabilir bir güvenlik denetim aracıdır. Kali Linux üzerinde çalışır, hedef domain'e bağlanır ve **50 farklı güvenlik kontrolü** gerçekleştirerek sonuçları interaktif bir HTML raporu olarak sunar.
 
-> ⚠️ Bu araç yalnızca **yetkili güvenlik değerlendirmeleri** için tasarlanmıştır. İzinsiz sistemlerde kullanımı yasaldışıdır.
+> ⚠️ Bu araç yalnızca **yetkili güvenlik değerlendirmeleri** için tasarlanmıştır. İzinsiz sistemlerde kullanımı yasa dışıdır.
 
 ---
 
