@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADScan Report — lab.local</title>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;--t:#e6edf3;--t2:#8b949e;--brd:#30363d;--accent:#58a6ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);line-height:1.6;font-size:15px}
+code{font-family:monospace;font-size:.85em;color:#79c0ff}
+h2{font-size:1.05rem;font-weight:600;border-left:3px solid var(--accent);padding-left:.7rem;margin-bottom:1rem}
+section{margin-bottom:2.5rem}
+header{background:#161b22;border-bottom:2px solid #da3633;padding:1.5rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.hl h1{font-size:1.6rem;color:#f85149;font-weight:800}
+.hl h1 span{color:var(--t2);font-size:1rem;font-weight:400;margin-left:.5rem}
+.hl p{color:var(--t2);font-size:.82rem;margin-top:.2rem}
+.hr .domain{font-size:1rem;font-weight:600;color:var(--accent)}
+.hr .dt{font-size:.8rem;color:var(--t2);margin-top:.2rem}
+.wrap{max-width:1400px;margin:0 auto;padding:2rem 2.5rem}
+
+/* ES */
+.es-box{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:1.5rem;display:flex;gap:2rem;flex-wrap:wrap}
+.es-score-col{display:flex;flex-direction:column;align-items:center;gap:.9rem;min-width:200px}
+.es-circle{width:100px;height:100px;border-radius:50%;border:4px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto}
+.es-num{font-size:1.8rem;font-weight:800;line-height:1}
+.es-den{font-size:.8rem;color:var(--t2)}
+.es-grade{font-size:1.5rem;font-weight:800}
+.es-glbl{font-size:.8rem;font-weight:600}
+.es-slider{width:190px}
+.es-sl-labels{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;margin-bottom:.3rem}
+.es-sl-track{position:relative;height:8px;background:var(--bg4);border-radius:4px}
+.es-sl-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#da3633 0%,#e3b341 50%,#3fb950 100%)}
+.es-sl-thumb{position:absolute;top:-6px;width:20px;height:20px;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.6)}
+.es-sl-mm{display:flex;justify-content:space-between;font-size:.72rem;color:var(--t2);margin-top:.35rem}
+.es-counts{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;width:100%}
+.es-cnt{background:var(--bg3);border:1px solid;border-radius:8px;padding:.45rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.es-cnt span:last-child{font-size:.72rem;color:var(--t2)}
+.es-info-col{flex:1;min-width:280px}
+.es-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:.35rem .75rem}
+.es-lbl{font-size:.72rem;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.es-val{font-size:.88rem;color:var(--t);font-weight:500;margin-top:.1rem}
+.es-finding{display:flex;align-items:flex-start;gap:.75rem;padding:.55rem 0;border-bottom:1px solid var(--brd)}
+.es-finding:last-child{border-bottom:none}
+
+/* Charts */
+.charts-wrap{display:flex;gap:1.5rem;flex-wrap:wrap}
+.chart-box{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:1.5rem;flex:1;min-width:280px}
+.chart-title{font-size:.9rem;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
+.pie-container{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.pie-slice{cursor:pointer;transition:transform .15s,filter .15s}
+.pie-legend{display:flex;flex-direction:column;gap:.5rem}
+.pie-leg{display:flex;align-items:center;gap:.6rem;font-size:.88rem}
+.pie-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.pie-name{flex:1;color:var(--t)}
+.pie-num{font-weight:700;color:var(--t);min-width:20px;text-align:right}
+.pie-pct{font-size:.78rem;min-width:36px;text-align:right}
+
+/* Bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:.85rem;padding-top:.25rem}
+.bar-row{display:flex;align-items:center;gap:.75rem}
+.bar-label{font-size:.78rem;font-weight:700;width:70px;text-align:right;color:var(--t2)}
+.bar-track{flex:1;background:var(--bg4);border-radius:4px;height:28px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;
+           justify-content:flex-end;padding-right:.5rem;
+           transition:width .6s ease;min-width:28px}
+.bar-val{font-size:.82rem;font-weight:700;color:#fff}
+
+/* Stats */
+.scards{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.7rem}
+.scard{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:.9rem;text-align:center}
+.snum{font-size:2rem;font-weight:800;line-height:1}
+.slbl{color:var(--t2);font-size:.73rem;margin-top:.3rem}
+.dcbox{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:1.25rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.dcip{font-size:1.2rem;font-weight:700;color:var(--accent)}
+.dclbl{color:var(--t2);font-size:.8rem;margin-bottom:.3rem}
+.pt{display:inline-block;background:var(--bg3);border:1px solid var(--brd);border-radius:5px;padding:.15rem .5rem;margin:.2rem;font-size:.78rem}
+.polcard{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;overflow:hidden}
+.polcard table{width:100%}
+.polcard td{padding:.55rem 1rem;border-top:1px solid var(--brd);font-size:.9rem}
+.polcard tr:first-child td{border-top:none}
+.bad{color:#f85149;font-weight:600}
+
+/* Findings */
+.finding{border-radius:10px;margin-bottom:.65rem;border:1px solid var(--brd);overflow:hidden}
+.finding.critical{border-left:4px solid #da3633}
+.finding.high{border-left:4px solid #f0883e}
+.finding.medium{border-left:4px solid #e3b341}
+.finding.low{border-left:4px solid #3fb950}
+.fh{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1.2rem;cursor:pointer;background:var(--bg2)}
+.fh:hover{background:var(--bg3)}
+.fhl{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0}
+.fhr{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.fid{color:var(--t2);font-size:.78rem;flex-shrink:0}
+.ftitle{font-weight:600;font-size:.95rem}
+.fcat{font-size:.72rem;color:var(--t2);background:var(--bg4);padding:.1rem .4rem;border-radius:4px;white-space:nowrap}
+.chev{color:var(--t2);transition:transform .2s}
+.finding.open .chev{transform:rotate(180deg)}
+.fb{display:none;padding:1rem 1.2rem 1.2rem;background:var(--bg2);border-top:1px solid var(--brd)}
+.finding.open .fb{display:block}
+.fsec{margin-top:.9rem}
+.flab{font-size:.8rem;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem}
+.fsec p{color:var(--t2);font-size:.9rem}
+.aff{margin:.35rem 0 0 1.2rem;color:var(--t2);font-size:.85rem;font-family:monospace}
+.fix{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.2);border-radius:6px;padding:.85rem}
+.fix p{color:#7ee787!important}
+.ep-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .7rem;border-radius:5px;border:1px solid;font-size:.78rem;font-weight:600;vertical-align:middle;line-height:1.4}
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .6rem;border-radius:5px;font-size:.75rem;font-weight:700;vertical-align:middle;line-height:1.4}
+.badge.critical{background:#3d1212;color:#ff7b72}
+.badge.high{background:#3d2200;color:#ffa657}
+.badge.medium{background:#3d3000;color:#e3b341}
+.badge.low{background:#0d4429;color:#7ee787}
+.badge.info{background:#1e3a5f;color:#93c5fd}
+.tag{display:inline-flex;align-items:center;gap:.2rem;padding:.12rem .5rem;border-radius:4px;font-size:.74rem;font-weight:600;margin:.1rem;vertical-align:middle;line-height:1.4}
+.tag.ok{background:#0d4429;color:#3fb950}
+.tag.off{background:#1c2128;color:#6e7681}
+.tag.warn{background:#3d2b00;color:#e3b341}
+.tag.crit{background:#3d1212;color:#f85149}
+
+/* Remediation */
+.rem-item{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;margin-bottom:.75rem;overflow:hidden}
+.rem-header{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.2rem;background:var(--bg3)}
+.rem-num{color:var(--t2);font-size:.82rem;font-weight:700;flex-shrink:0}
+.rem-title{flex:1;font-weight:600;font-size:.95rem}
+.rem-fix{padding:.85rem 1.2rem;color:#7ee787;font-size:.88rem;background:rgba(63,185,80,.06);border-top:1px solid var(--brd)}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--brd);margin-bottom:1rem;overflow-x:auto}
+.tab{padding:.5rem 1rem;cursor:pointer;font-size:.88rem;color:var(--t2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-p{display:none}
+.tab-p.on{display:block}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{background:var(--bg3);padding:.6rem 1rem;text-align:left;font-size:.76rem;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;vertical-align:middle}
+td{padding:.5rem 1rem;border-top:1px solid var(--brd);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.015)}
+tr.priv td{background:rgba(218,54,51,.06)}
+tr.check-found td{background:rgba(218,54,51,.04)}
+.empty{color:var(--t2);font-style:italic;padding:.5rem}
+.checks-filter{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.cf-btn{background:var(--bg3);border:1px solid var(--brd);color:var(--t2);padding:.3rem .75rem;border-radius:5px;cursor:pointer;font-size:.8rem}
+.cf-btn.on{background:var(--accent);color:#000;border-color:var(--accent)}
+.pdf-btn{text-align:center;margin:1.5rem 0}
+.pdf-btn button{background:#1f6feb;color:#fff;border:none;padding:.7rem 2rem;border-radius:8px;font-size:.95rem;cursor:pointer;font-family:inherit}
+footer{text-align:center;padding:1.5rem;color:var(--t2);font-size:.8rem;border-top:1px solid var(--brd)}
+
+/* PRINT WHITE THEME */
+@media print{
+  :root{--bg:#fff;--bg2:#f8f9fa;--bg3:#e9ecef;--bg4:#dee2e6;--t:#212529;--t2:#6c757d;--brd:#dee2e6;--accent:#0d6efd}
+  body{background:#fff;color:#212529;font-size:13px}
+  header{background:#fff;border-bottom:2px solid #dc3545}
+  .hl h1{color:#dc3545}
+  .pdf-btn,.tabs,.checks-filter{display:none!important}
+  .fb,.tab-p{display:block!important}
+  .finding{break-inside:avoid}
+  .fh{background:#f8f9fa}
+  .badge.critical{background:#f8d7da;color:#842029}
+  .badge.high{background:#fff3cd;color:#664d03}
+  .badge.medium{background:#fff3cd;color:#664d03}
+  .badge.low{background:#d1e7dd;color:#0a3622}
+  .tag.ok{background:#d1e7dd;color:#0a3622}
+  .tag.crit{background:#f8d7da;color:#842029}
+  .tag.warn{background:#fff3cd;color:#664d03}
+  .fix{background:#d1e7dd;border-color:#a3cfbb}
+  .fix p{color:#0a3622!important}
+  .rem-fix{color:#0a3622;background:#d1e7dd}
+  .bar-val{color:#212529}
+  code{color:#0d6efd}
+  tr.check-found td{background:#f8d7da}
+  tr.priv td{background:#f8d7da}
+  .bad{color:#dc3545}
+  h2{color:#212529;border-left-color:#0d6efd}
+  section{page-break-inside:avoid}
+}
+</style></head><body>
+
+<header>
+  <div class="hl">
+    <h1>ADScan <span>Active Directory Security Analyzer</span></h1>
+    <p>Active Directory Security Assessment Report</p>
+  </div>
+  <div class="hr">
+    <div class="domain">lab.local</div>
+    <div class="dt">05.05.2026 10:58</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+
+<section id="executive-summary">
+  <h2>📋 Executive Summary</h2>
+  <div class="es-box">
+    <div class="es-score-col">
+      <div class="es-circle" style="border-color:#da3633">
+        <div class="es-num" style="color:#da3633">12</div>
+        <div class="es-den">/100</div>
+      </div>
+      <div class="es-grade" style="color:#da3633">Grade: F</div>
+      <div class="es-glbl" style="color:#da3633">Critical Risk</div>
+      <div class="es-slider">
+        <div class="es-sl-labels">
+          <span style="color:#da3633">F</span><span style="color:#f0883e">D</span>
+          <span style="color:#e3b341">C</span><span style="color:#58a6ff">B</span>
+          <span style="color:#3fb950">A</span>
+        </div>
+        <div class="es-sl-track">
+          <div class="es-sl-fill" style="width:12%"></div>
+          <div class="es-sl-thumb" style="left:calc(12% - 10px);background:#da3633"></div>
+        </div>
+        <div class="es-sl-mm"><span>0</span><span style="color:#da3633;font-weight:700">12</span><span>100</span></div>
+      </div>
+      <div class="es-counts">
+        <div class="es-cnt" style="border-color:#da3633"><span style="color:#da3633;font-size:1.4rem;font-weight:800">1</span><span>Critical</span></div>
+        <div class="es-cnt" style="border-color:#f0883e"><span style="color:#f0883e;font-size:1.4rem;font-weight:800">6</span><span>High</span></div>
+        <div class="es-cnt" style="border-color:#e3b341"><span style="color:#e3b341;font-size:1.4rem;font-weight:800">10</span><span>Medium</span></div>
+        <div class="es-cnt" style="border-color:#3fb950"><span style="color:#3fb950;font-size:1.4rem;font-weight:800">1</span><span>Low</span></div>
+      </div>
+    </div>
+    <div class="es-info-col">
+      <div class="es-meta-grid">
+        <div><div class="es-lbl">Target Domain</div><div class="es-val">lab.local</div></div>
+        <div><div class="es-lbl">Domain Controller</div><div class="es-val">192.168.56.10</div></div>
+        <div><div class="es-lbl">Scan Date</div><div class="es-val">05.05.2026 10:58</div></div>
+        <div><div class="es-lbl">Scan Duration</div><div class="es-val">0:00:02</div></div>
+        <div><div class="es-lbl">Total Findings</div><div class="es-val">18</div></div>
+        <div><div class="es-lbl">Checks Run</div><div class="es-val">50 / 50</div></div>
+        <div><div class="es-lbl">Analyst</div><div class="es-val">Administrator</div></div>
+        <div><div class="es-lbl">Tool</div><div class="es-val">ADScan v2.0</div></div>
+        <div style="grid-column:1/-1">
+          <div class="es-lbl">Scan Scope</div>
+          <div class="es-val" style="color:#58a6ff;font-weight:600">Full scan — all 50 controls executed</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="es-lbl">OVERALL ASSESSMENT</div>
+        <p style="color:var(--t2);font-size:.88rem;line-height:1.6;margin-top:.35rem">Assessment of <strong style='color:#58a6ff'>lab.local</strong> identified <strong style='color:#da3633'>1 critical</strong> and <strong style='color:#f0883e'>6 high</strong> severity findings. Immediate remediation is strongly recommended.</p>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="es-lbl" style="margin-bottom:.5rem">TOP PRIORITY FINDINGS</div>
+        <div class="es-finding">
+          <span class="badge critical" style="flex-shrink:0">🔴 CRITICAL</span>
+          <div>
+            <div style="font-weight:600;font-size:.9rem">krbtgt Password Never Changed — Golden Ticket Risk</div>
+            <div style="color:var(--t2);font-size:.82rem;margin-top:.1rem">The krbtgt password has NEVER been changed.</div>
+          </div></div><div class="es-finding">
+          <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+          <div>
+            <div style="font-weight:600;font-size:.9rem">AS-REP Roasting — Pre-authentication Disabled</div>
+            <div style="color:var(--t2);font-size:.82rem;margin-top:.1rem">1 account(s) have Kerberos pre-authentication disabled.</div>
+          </div></div><div class="es-finding">
+          <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+          <div>
+            <div style="font-weight:600;font-size:.9rem">Kerberoasting — SPN-Registered Service Accounts</div>
+            <div style="color:var(--t2);font-size:.82rem;margin-top:.1rem">1 enabled user account(s) have SPNs registered.</div>
+          </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>📊 Inventory Overview</h2>
+  <div class="scards">
+    <div class="scard"><div class="snum" style="color:#da3633">12<span style="font-size:.9rem">/100</span></div><div class="slbl">Score · <strong style="color:#da3633">F</strong></div></div>
+    <div class="scard"><div class="snum" style="color:#da3633">1</div><div class="slbl">Critical</div></div>
+    <div class="scard"><div class="snum" style="color:#f0883e">6</div><div class="slbl">High</div></div>
+    <div class="scard"><div class="snum" style="color:#e3b341">10</div><div class="slbl">Medium</div></div>
+    <div class="scard"><div class="snum" style="color:#3fb950">1</div><div class="slbl">Low</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">13</div><div class="slbl">Users</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">52</div><div class="slbl">Groups</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">1</div><div class="slbl">Computers</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">2</div><div class="slbl">GPOs</div></div>
+    <div class="scard"><div class="snum" style="color:#f0883e">2</div><div class="slbl">SPN Accounts</div></div>
+    <div class="scard"><div class="snum" style="color:#da3633">1</div><div class="slbl">AS-REP Vuln</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>📊 Risk Distribution</h2>
+  
+<div class="charts-wrap">
+
+  <!-- Pie Chart -->
+  <div class="chart-box">
+    <div class="chart-title">Findings by Category</div>
+    <div class="pie-container">
+      <svg id="pie-svg" viewBox="0 0 260 260" width="240" height="240" style="overflow:visible">
+        
+<path class="pie-slice" d="M130,130 L130.00,20.00 A110,110 0 0,1 238.33,149.10 Z"
+  fill="#da3633" stroke="#0d1117" stroke-width="2"
+  data-cat="Password Policy" data-cnt="5" data-pct="28%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+<path class="pie-slice" d="M130,130 L238.33,149.10 A110,110 0 0,1 130.00,240.00 Z"
+  fill="#f0883e" stroke="#0d1117" stroke-width="2"
+  data-cat="Kerberos" data-cnt="4" data-pct="22%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+<path class="pie-slice" d="M130,130 L130.00,240.00 A110,110 0 0,1 34.74,185.00 Z"
+  fill="#e3b341" stroke="#0d1117" stroke-width="2"
+  data-cat="Service Accounts" data-cnt="3" data-pct="17%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+<path class="pie-slice" d="M130,130 L34.74,185.00 A110,110 0 0,1 34.74,75.00 Z"
+  fill="#3fb950" stroke="#0d1117" stroke-width="2"
+  data-cat="Account Hygiene" data-cnt="3" data-pct="17%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+<path class="pie-slice" d="M130,130 L34.74,75.00 A110,110 0 0,1 59.29,45.74 Z"
+  fill="#58a6ff" stroke="#0d1117" stroke-width="2"
+  data-cat="Privileged Accounts" data-cnt="1" data-pct="6%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+<path class="pie-slice" d="M130,130 L59.29,45.74 A110,110 0 0,1 92.38,26.63 Z"
+  fill="#8957e5" stroke="#0d1117" stroke-width="2"
+  data-cat="System Security" data-cnt="1" data-pct="6%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+<path class="pie-slice" d="M130,130 L92.38,26.63 A110,110 0 0,1 130.00,20.00 Z"
+  fill="#db6d28" stroke="#0d1117" stroke-width="2"
+  data-cat="Domain Config" data-cnt="1" data-pct="6%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+        <!-- Donut hole -->
+        <circle cx="130" cy="130" r="55" fill="var(--bg2)" pointer-events="none"/>
+        <!-- Center text -->
+        <text id="pie-center-num" x="130" y="122" text-anchor="middle"
+              fill="var(--t)" font-size="22" font-weight="800">18</text>
+        <text id="pie-center-lbl" x="130" y="142" text-anchor="middle"
+              fill="var(--t2)" font-size="11">findings</text>
+
+      </svg>
+      <div class="pie-legend"><div class="pie-leg">
+  <span class="pie-dot" style="background:#da3633"></span>
+  <span class="pie-name">Password Policy</span>
+  <span class="pie-num">5</span>
+  <span class="pie-pct" style="color:#da3633">28%</span>
+</div><div class="pie-leg">
+  <span class="pie-dot" style="background:#f0883e"></span>
+  <span class="pie-name">Kerberos</span>
+  <span class="pie-num">4</span>
+  <span class="pie-pct" style="color:#f0883e">22%</span>
+</div><div class="pie-leg">
+  <span class="pie-dot" style="background:#e3b341"></span>
+  <span class="pie-name">Service Accounts</span>
+  <span class="pie-num">3</span>
+  <span class="pie-pct" style="color:#e3b341">17%</span>
+</div><div class="pie-leg">
+  <span class="pie-dot" style="background:#3fb950"></span>
+  <span class="pie-name">Account Hygiene</span>
+  <span class="pie-num">3</span>
+  <span class="pie-pct" style="color:#3fb950">17%</span>
+</div><div class="pie-leg">
+  <span class="pie-dot" style="background:#58a6ff"></span>
+  <span class="pie-name">Privileged Accounts</span>
+  <span class="pie-num">1</span>
+  <span class="pie-pct" style="color:#58a6ff">6%</span>
+</div><div class="pie-leg">
+  <span class="pie-dot" style="background:#8957e5"></span>
+  <span class="pie-name">System Security</span>
+  <span class="pie-num">1</span>
+  <span class="pie-pct" style="color:#8957e5">6%</span>
+</div><div class="pie-leg">
+  <span class="pie-dot" style="background:#db6d28"></span>
+  <span class="pie-name">Domain Config</span>
+  <span class="pie-num">1</span>
+  <span class="pie-pct" style="color:#db6d28">6%</span>
+</div></div>
+    </div>
+  </div>
+
+  <!-- Bar Chart -->
+  <div class="chart-box">
+    <div class="chart-title">Findings by Severity</div>
+    <div class="bar-chart">
+<div class="bar-row">
+  <div class="bar-label">CRITICAL</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:10.0%;background:#da3633">
+      <span class="bar-val">1</span>
+    </div>
+  </div>
+</div>
+<div class="bar-row">
+  <div class="bar-label">HIGH</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:60.0%;background:#f0883e">
+      <span class="bar-val">6</span>
+    </div>
+  </div>
+</div>
+<div class="bar-row">
+  <div class="bar-label">MEDIUM</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:100.0%;background:#e3b341">
+      <span class="bar-val">10</span>
+    </div>
+  </div>
+</div>
+<div class="bar-row">
+  <div class="bar-label">LOW</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:10.0%;background:#3fb950">
+      <span class="bar-val">1</span>
+    </div>
+  </div>
+</div></div>
+  </div>
+
+</div>
+
+<script>
+function pieHover(el, enter, evt) {
+  const tt   = document.getElementById('pie-tt');
+  const cNum = document.getElementById('pie-center-num');
+  const cLbl = document.getElementById('pie-center-lbl');
+
+  if (enter) {
+    const cat  = el.getAttribute('data-cat');
+    const cnt  = el.getAttribute('data-cnt');
+    const pct  = el.getAttribute('data-pct');
+    const fill = el.getAttribute('fill');
+
+    // Pop slice
+    el.style.transform = 'scale(1.07)';
+    el.style.transformOrigin = '130px 130px';
+    el.style.filter = 'drop-shadow(0 0 10px ' + fill + 'aa)';
+
+    // Center text
+    cNum.textContent = pct;
+    cNum.setAttribute('fill', fill);
+    cLbl.textContent = cat;
+
+    // HTML tooltip
+    document.getElementById('pie-tt-cat').textContent = cat;
+    document.getElementById('pie-tt-cat').style.color = fill;
+    document.getElementById('pie-tt-cnt').textContent = 'Findings: ' + cnt;
+    document.getElementById('pie-tt-pct').textContent = 'Share: ' + pct;
+    tt.style.display = 'block';
+  } else {
+    el.style.transform = '';
+    el.style.filter    = '';
+    tt.style.display   = 'none';
+    cNum.textContent   = '18';
+    cNum.setAttribute('fill','var(--t)');
+    cLbl.textContent   = 'findings';
+  }
+}
+
+document.addEventListener('mousemove', function(e) {
+  const tt = document.getElementById('pie-tt');
+  if (tt.style.display === 'block') {
+    tt.style.left = (e.clientX + 16) + 'px';
+    tt.style.top  = (e.clientY - 10) + 'px';
+  }
+});
+</script>
+</section>
+
+<section>
+  <h2>🖥 Domain Controller</h2>
+  <div class="dcbox">
+    <div><div class="dclbl">IP Address</div><div class="dcip">192.168.56.10</div></div>
+    <div><div class="dclbl">Domain</div><div style="font-weight:600">lab.local</div></div>
+    <div><div class="dclbl">Open Ports</div><div><span class="pt">53 <small>DNS</small></span><span class="pt">88 <small>Kerberos</small></span><span class="pt">135 <small>RPC</small></span><span class="pt">139 <small>NetBIOS</small></span><span class="pt">389 <small>LDAP</small></span><span class="pt">445 <small>SMB</small></span><span class="pt">464 <small>Kpasswd</small></span><span class="pt">636 <small>LDAPS</small></span><span class="pt">3268 <small>Global Catalog</small></span><span class="pt">3269 <small>GC-SSL</small></span><span class="pt">5985 <small>WinRM</small></span></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>🔐 Password Policy</h2>
+  <div class="polcard"><table><tbody><tr><td><b>Min. Password Length</b></td><td class="bad">0 ⚠</td></tr><tr><td><b>Password History</b></td><td>24</td></tr><tr><td><b>Complexity</b></td><td class="bad">Disabled ⚠</td></tr><tr><td><b>Lockout Threshold</b></td><td class="bad">0 ⚠</td></tr><tr><td><b>Max. Password Age</b></td><td>?</td></tr></tbody></table></div>
+</section>
+
+<section>
+  <h2>⚠ Security Findings (18)</h2>
+  
+<div class="finding critical" id="AD-005">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-005</code><span class="ftitle">krbtgt Password Never Changed — Golden Ticket Risk</span></div>
+    <div class="fhr"><span class="badge critical">🔴 CRITICAL</span><span class="fcat">Kerberos</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>The krbtgt password has NEVER been changed.<br>Attacker with this hash can forge Golden Tickets for permanent domain access.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ Domain Admin</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → pwdLastSet attribute on krbtgt account (value: 0 / null)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>krbtgt</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Reset krbtgt password TWICE (10 hours apart).<br>Use Microsoft Reset-KrbtgtPassword script. Rotate every 180 days.</p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-001">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-001</code><span class="ftitle">AS-REP Roasting — Pre-authentication Disabled</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Kerberos</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>1 account(s) have Kerberos pre-authentication disabled.<br>Attacker can request AS-REP ticket without credentials and crack offline.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → userAccountControl (flag: DONT_REQ_PREAUTH = 0x400000)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>test.user</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Set-ADAccountControl -Identity <user> -DoesNotRequirePreAuth $false<br>ADUC → Account tab → uncheck 'Do not require Kerberos preauthentication'</p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-002">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-002</code><span class="ftitle">Kerberoasting — SPN-Registered Service Accounts</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Kerberos</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>1 enabled user account(s) have SPNs registered.<br>Any domain user can request TGS tickets and crack passwords offline (GetUserSPNs.py).</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → servicePrincipalName attribute (non-machine accounts)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>svc_sql → MSSQLSvc/w19.lab.local:1433</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Replace with gMSA accounts or use 25+ char random passwords.<br>Remove unnecessary SPNs: setspn -D <SPN> <account></p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-006">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-006</code><span class="ftitle">Minimum Password Length Below Recommended (< 14)</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Current minimum is 0 characters. NIST recommends ≥14.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → minPwdLength attribute</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Current: 0 chars (recommended: ≥14)</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>GPMC → Default Domain Policy → Password Policy → Minimum length: 14</p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-007">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-007</code><span class="ftitle">Password Complexity Disabled</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Users can set simple passwords without uppercase, numbers or symbols.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → pwdProperties (bit 1 = complexity)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Default Domain Policy</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>GPMC → Password Policy → Complexity requirements: Enabled</p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-009">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-009</code><span class="ftitle">Account Lockout Threshold Not Configured</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>No account lockout. Unlimited password guessing allowed (brute-force/spray).</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → lockoutThreshold attribute (value: 0)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Default Domain Policy</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>GPMC → Account Lockout Policy: Threshold: 5, Window: 15min, Duration: 15min</p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-049">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-049</code><span class="ftitle">High Password Spray Attack Risk</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>No account lockout AND weak password policy.<br>Domain is highly susceptible to automated password spray attacks.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → lockoutThreshold=0 + minPwdLength<8 (combined risk)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Domain-wide risk</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>1. Configure lockout (threshold:5, duration:15min)<br>2. Increase minimum password length to 14+<br>3. Enable password complexity</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-012">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-012</code><span class="ftitle">Maximum Password Age Unlimited or Unknown</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Passwords may never expire. Users never need to change credentials.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#f0883e;color:#f0883e">⚡ Any authenticated user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → maxPwdAge attribute</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Default Domain Policy</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Set-ADDefaultDomainPasswordPolicy -MaxPasswordAge (New-TimeSpan -Days 90)</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-015">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-015</code><span class="ftitle">Default Administrator Account Active and Not Renamed</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Privileged Accounts</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Built-in Administrator is enabled with default name. First target in attacks.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → user 'Administrator' → userAccountControl (enabled)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Administrator</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Rename the account and create a separate break-glass account.</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-022">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-022</code><span class="ftitle">Undocumented Service Accounts</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Service Accounts</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>1 service account(s) with no description. Ownership unknown.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → user accounts starting with svc_ → description attribute empty</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>svc_sql</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Set-ADUser -Identity <svc> -Description 'Owner: Name | App: X | Created: Date'</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-023">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-023</code><span class="ftitle">Service Accounts with Password Never Expires</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Service Accounts</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>2 service account(s) with non-expiring passwords.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → svc_ accounts → userAccountControl (DONT_EXPIRE_PASSWORD = 0x10000)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (2)</div><ul class="aff"><li>svc_sql</li><li>svc_legacy</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Use gMSA (Group Managed Service Accounts) with automatic password rotation.</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-024">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-024</code><span class="ftitle">Shared / Generic Service Accounts Detected</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Service Accounts</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Shared accounts make audit trails impossible.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → user accounts with 'shared/common/generic' in sAMAccountName</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>shared.support</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Replace shared accounts with individual service accounts or gMSA.</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-025">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-025</code><span class="ftitle">Stale Accounts — Inactive 90+ Days (10)</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Account Hygiene</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>10 active account(s) unused for 90+ days.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → user accounts → lastLogon attribute (Windows FILETIME, >90 days)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (10)</div><ul class="aff"><li>ali.yilmaz (never logged on)</li><li>ayse.demir (never logged on)</li><li>mehmet.kaya (never logged on)</li><li>zeynep.arslan (never logged on)</li><li>can.kurt (never logged on)</li><li>test.user (never logged on)</li><li>svc_sql (never logged on)</li><li>shared.support (never logged on)</li><li>eski.calisan (never logged on)</li><li>svc_legacy (never logged on)</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 -UsersOnly |<br>  Disable-ADAccount</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-026">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-026</code><span class="ftitle">Password Never Expires on User Accounts</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Account Hygiene</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>3 user account(s) with 'Password Never Expires' set.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → user accounts → userAccountControl (DONT_EXPIRE_PASSWORD = 0x10000)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (3)</div><ul class="aff"><li>Administrator</li><li>shared.support</li><li>eski.calisan</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Get-ADUser -Filter {PasswordNeverExpires -eq $true} |<br>  Where-Object {$_.SamAccountName -notlike 'svc_*'} |<br>  Set-ADUser -PasswordNeverExpires $false</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-032">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-032</code><span class="ftitle">Accounts Susceptible to Weak Kerberos Encryption</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Kerberos</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>1 account(s) may accept weak RC4/DES Kerberos encryption.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → user accounts → userAccountControl (DONT_REQ_PREAUTH flag set)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>test.user</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Enable AES encryption: Set-ADUser -KerberosEncryptionType AES256</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-035">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-035</code><span class="ftitle">WinRM Enabled on Domain Controller</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">System Security</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>WinRM allows remote PowerShell on DC. Credential compromise = RCE on DC.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">nmap → port scan → port 5985/5986 open on DC IP</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>DC: 192.168.56.10 (port 5985/5986 open)</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Disable-PSRemoting -Force (if not required)<br>Restrict via firewall to admin hosts only.</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-043">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-043</code><span class="ftitle">Protected Users Security Group is Empty</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Domain Config</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Protected Users group has no members.<br>This group prevents NTLM, DES, RC4 and unconstrained delegation for members.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ Domain Admin</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → group 'Protected Users' → member count = 0</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Protected Users (empty)</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Add-ADGroupMember -Identity 'Protected Users' -Members <admin_accounts></p></div>
+  </div>
+</div>
+<div class="finding low" id="AD-029">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-029</code><span class="ftitle">Enabled Accounts That Have Never Logged On</span></div>
+    <div class="fhr"><span class="badge low">🟢 LOW</span><span class="fcat">Account Hygiene</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>10 enabled account(s) never used.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#e3b341;color:#e3b341">⚡ Low-privileged domain user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → user accounts → lastLogon = 0 (never authenticated)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (10)</div><ul class="aff"><li>ali.yilmaz</li><li>ayse.demir</li><li>mehmet.kaya</li><li>zeynep.arslan</li><li>can.kurt</li><li>test.user</li><li>svc_sql</li><li>shared.support</li><li>eski.calisan</li><li>svc_legacy</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Disable-ADAccount -Identity <account></p></div>
+  </div>
+</div>
+</section>
+
+<section>
+  <h2>📋 Findings Overview</h2>
+  <div class="tw" style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;overflow:hidden">
+    <table>
+      <thead><tr><th>ID</th><th>Finding</th><th>Severity</th><th>Category</th><th>Affected</th><th>Detail</th></tr></thead>
+      <tbody><tr>
+  <td><code>AD-005</code></td>
+  <td>krbtgt Password Never Changed — Golden Ticket Risk</td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-005" onclick="scrollToFinding('AD-005')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-001</code></td>
+  <td>AS-REP Roasting — Pre-authentication Disabled</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-001" onclick="scrollToFinding('AD-001')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-002</code></td>
+  <td>Kerberoasting — SPN-Registered Service Accounts</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-002" onclick="scrollToFinding('AD-002')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-006</code></td>
+  <td>Minimum Password Length Below Recommended (< 14)</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-006" onclick="scrollToFinding('AD-006')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-007</code></td>
+  <td>Password Complexity Disabled</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-007" onclick="scrollToFinding('AD-007')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-009</code></td>
+  <td>Account Lockout Threshold Not Configured</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-009" onclick="scrollToFinding('AD-009')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-049</code></td>
+  <td>High Password Spray Attack Risk</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-049" onclick="scrollToFinding('AD-049')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-012</code></td>
+  <td>Maximum Password Age Unlimited or Unknown</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-012" onclick="scrollToFinding('AD-012')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-015</code></td>
+  <td>Default Administrator Account Active and Not Renamed</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-015" onclick="scrollToFinding('AD-015')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-022</code></td>
+  <td>Undocumented Service Accounts</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-022" onclick="scrollToFinding('AD-022')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-023</code></td>
+  <td>Service Accounts with Password Never Expires</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td style="text-align:center">2</td>
+  <td><a href="#AD-023" onclick="scrollToFinding('AD-023')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-024</code></td>
+  <td>Shared / Generic Service Accounts Detected</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-024" onclick="scrollToFinding('AD-024')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-025</code></td>
+  <td>Stale Accounts — Inactive 90+ Days (10)</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td style="text-align:center">10</td>
+  <td><a href="#AD-025" onclick="scrollToFinding('AD-025')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-026</code></td>
+  <td>Password Never Expires on User Accounts</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td style="text-align:center">3</td>
+  <td><a href="#AD-026" onclick="scrollToFinding('AD-026')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-032</code></td>
+  <td>Accounts Susceptible to Weak Kerberos Encryption</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-032" onclick="scrollToFinding('AD-032')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-035</code></td>
+  <td>WinRM Enabled on Domain Controller</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">System Security</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-035" onclick="scrollToFinding('AD-035')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-043</code></td>
+  <td>Protected Users Security Group is Empty</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-043" onclick="scrollToFinding('AD-043')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-029</code></td>
+  <td>Enabled Accounts That Have Never Logged On</td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td style="text-align:center">10</td>
+  <td><a href="#AD-029" onclick="scrollToFinding('AD-029')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>🛠 Remediation Summary</h2>
+  <p style="color:var(--t2);font-size:.85rem;margin-bottom:1rem">All remediation steps in priority order. Address Critical and High findings first.</p>
+  <div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#1</span>
+    <span class="rem-title">krbtgt Password Never Changed — Golden Ticket Risk</span>
+    <span class="badge critical" style="flex-shrink:0">🔴 CRITICAL</span>
+  </div>
+  <div class="rem-fix">Reset krbtgt password TWICE (10 hours apart).<br>Use Microsoft Reset-KrbtgtPassword script. Rotate every 180 days.</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#2</span>
+    <span class="rem-title">AS-REP Roasting — Pre-authentication Disabled</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">Set-ADAccountControl -Identity <user> -DoesNotRequirePreAuth $false<br>ADUC → Account tab → uncheck 'Do not require Kerberos preauthentication'</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#3</span>
+    <span class="rem-title">Kerberoasting — SPN-Registered Service Accounts</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">Replace with gMSA accounts or use 25+ char random passwords.<br>Remove unnecessary SPNs: setspn -D <SPN> <account></div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#4</span>
+    <span class="rem-title">Minimum Password Length Below Recommended (< 14)</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">GPMC → Default Domain Policy → Password Policy → Minimum length: 14</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#5</span>
+    <span class="rem-title">Password Complexity Disabled</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">GPMC → Password Policy → Complexity requirements: Enabled</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#6</span>
+    <span class="rem-title">Account Lockout Threshold Not Configured</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">GPMC → Account Lockout Policy: Threshold: 5, Window: 15min, Duration: 15min</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#7</span>
+    <span class="rem-title">High Password Spray Attack Risk</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">1. Configure lockout (threshold:5, duration:15min)<br>2. Increase minimum password length to 14+<br>3. Enable password complexity</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#8</span>
+    <span class="rem-title">Maximum Password Age Unlimited or Unknown</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Set-ADDefaultDomainPasswordPolicy -MaxPasswordAge (New-TimeSpan -Days 90)</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#9</span>
+    <span class="rem-title">Default Administrator Account Active and Not Renamed</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Rename the account and create a separate break-glass account.</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#10</span>
+    <span class="rem-title">Undocumented Service Accounts</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Set-ADUser -Identity <svc> -Description 'Owner: Name | App: X | Created: Date'</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#11</span>
+    <span class="rem-title">Service Accounts with Password Never Expires</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Use gMSA (Group Managed Service Accounts) with automatic password rotation.</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#12</span>
+    <span class="rem-title">Shared / Generic Service Accounts Detected</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Replace shared accounts with individual service accounts or gMSA.</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#13</span>
+    <span class="rem-title">Stale Accounts — Inactive 90+ Days (10)</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 -UsersOnly |<br>  Disable-ADAccount</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#14</span>
+    <span class="rem-title">Password Never Expires on User Accounts</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Get-ADUser -Filter {PasswordNeverExpires -eq $true} |<br>  Where-Object {$_.SamAccountName -notlike 'svc_*'} |<br>  Set-ADUser -PasswordNeverExpires $false</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#15</span>
+    <span class="rem-title">Accounts Susceptible to Weak Kerberos Encryption</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Enable AES encryption: Set-ADUser -KerberosEncryptionType AES256</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#16</span>
+    <span class="rem-title">WinRM Enabled on Domain Controller</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Disable-PSRemoting -Force (if not required)<br>Restrict via firewall to admin hosts only.</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#17</span>
+    <span class="rem-title">Protected Users Security Group is Empty</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Add-ADGroupMember -Identity 'Protected Users' -Members <admin_accounts></div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#18</span>
+    <span class="rem-title">Enabled Accounts That Have Never Logged On</span>
+    <span class="badge low" style="flex-shrink:0">🟢 LOW</span>
+  </div>
+  <div class="rem-fix">Disable-ADAccount -Identity <account></div>
+</div>
+</section>
+
+<section>
+  <h2>📁 Inventory</h2>
+  <div style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:1.25rem">
+    <div class="tabs">
+      <div class="tab on" onclick="tab(this,'tu')">Users (13)</div>
+      <div class="tab"    onclick="tab(this,'tc')">Computers (1)</div>
+      <div class="tab"    onclick="tab(this,'ts')">SPN / Kerberoasting (2)</div>
+      <div class="tab"    onclick="tab(this,'ta')">AS-REP Vulnerable (1)</div>
+      <div class="tab"    onclick="tab(this,'tg')">Groups (52)</div>
+    </div>
+    <div id="tu" class="tab-p on"><div class="tw"><table>
+      <thead><tr><th>Username</th><th>Status</th><th>Department</th><th>Title</th><th>Risk Flags</th></tr></thead>
+      <tbody><tr><td><code>Administrator</code></td><td><span class="tag ok">Active</span></td><td></td><td></td><td><span class="tag warn">Pwd∞</span></td></tr><tr><td><code>Guest</code></td><td><span class="tag off">Disabled</span></td><td></td><td></td><td><span class="tag warn">Pwd∞</span></td></tr><tr><td><code>krbtgt</code></td><td><span class="tag off">Disabled</span></td><td></td><td></td><td></td></tr><tr><td><code>ali.yilmaz</code></td><td><span class="tag ok">Active</span></td><td>Information Technology</td><td>System Specialist</td><td></td></tr><tr><td><code>ayse.demir</code></td><td><span class="tag ok">Active</span></td><td>Finance</td><td>Accounting Specialist</td><td></td></tr><tr><td><code>mehmet.kaya</code></td><td><span class="tag ok">Active</span></td><td>Human Resources</td><td>HR Specialist</td><td></td></tr><tr><td><code>zeynep.arslan</code></td><td><span class="tag ok">Active</span></td><td>Software Development</td><td>Software Developer</td><td></td></tr><tr><td><code>can.kurt</code></td><td><span class="tag ok">Active</span></td><td>Network Management</td><td>Network Specialist</td><td></td></tr><tr><td><code>test.user</code></td><td><span class="tag ok">Active</span></td><td>IT</td><td>Test Account</td><td><span class="tag crit">AS-REP</span></td></tr><tr><td><code>svc_sql</code></td><td><span class="tag ok">Active</span></td><td>IT</td><td>SQL Service Account</td><td><span class="tag warn">Pwd∞</span></td></tr><tr><td><code>shared.support</code></td><td><span class="tag ok">Active</span></td><td>Support</td><td>Shared Support Account</td><td><span class="tag warn">Pwd∞</span></td></tr><tr><td><code>eski.calisan</code></td><td><span class="tag ok">Active</span></td><td>Former Staff</td><td>Should Be Deactivated</td><td><span class="tag warn">Pwd∞</span></td></tr><tr><td><code>svc_legacy</code></td><td><span class="tag ok">Active</span></td><td>IT</td><td>Legacy Application Service</td><td><span class="tag warn">Pwd∞</span></td></tr></tbody></table></div></div>
+    <div id="tc" class="tab-p"><div class="tw"><table>
+      <thead><tr><th>Computer</th><th>Operating System</th><th>DNS</th></tr></thead>
+      <tbody><tr><td><code>W19</code></td><td>Windows Server 2019 Standard Evaluation </td><td>W19.lab.local</td></tr></tbody></table></div></div>
+    <div id="ts" class="tab-p"><div class="tw">
+      <p style="color:var(--t2);font-size:.85rem;margin-bottom:.75rem">TGS tickets can be requested and cracked offline.</p>
+      <table><thead><tr><th>Account</th><th>Status</th><th>SPN Records</th></tr></thead>
+      <tbody><tr><td><code>krbtgt</code></td><td><span class="tag off">Disabled</span></td><td><code>kadmin/changepw</code></td></tr><tr><td><code>svc_sql</code></td><td><span class="tag ok">Active</span></td><td><code>MSSQLSvc/w19.lab.local:1433</code></td></tr></tbody></table></div></div>
+    <div id="ta" class="tab-p"><div class="tw">
+      <p style="color:var(--t2);font-size:.85rem;margin-bottom:.75rem">AS-REP hash can be captured and cracked offline without credentials.</p>
+      <table><thead><tr><th>Account</th><th>Department</th><th>Group Memberships</th></tr></thead>
+      <tbody><tr><td><code>test.user</code></td><td>IT</td><td></td></tr></tbody></table></div></div>
+    <div id="tg" class="tab-p"><div class="tw">
+      <p style="color:var(--t2);font-size:.85rem;margin-bottom:.75rem">Red rows: privileged groups.</p>
+      <table><thead><tr><th>Group</th><th>Members</th><th>Description</th></tr></thead>
+      <tbody><tr class="priv"><td><code>Administrators</code></td><td>3</td><td>Administrators have complete and unrestricted access to the computer/domain</td></tr><tr><td><code>Users</code></td><td>3</td><td>Users are prevented from making accidental or intentional system-wide changes an</td></tr><tr><td><code>Guests</code></td><td>2</td><td>Guests have the same access as members of the Users group by default, except for</td></tr><tr><td><code>Print Operators</code></td><td>0</td><td>Members can administer printers installed on domain controllers</td></tr><tr class="priv"><td><code>Backup Operators</code></td><td>0</td><td>Backup Operators can override security restrictions for the sole purpose of back</td></tr><tr><td><code>Replicator</code></td><td>0</td><td>Supports file replication in a domain</td></tr><tr><td><code>Remote Desktop Users</code></td><td>0</td><td>Members in this group are granted the right to logon remotely</td></tr><tr><td><code>Network Configuration Operators</code></td><td>0</td><td>Members in this group can have some administrative privileges to manage configur</td></tr><tr><td><code>Performance Monitor Users</code></td><td>0</td><td>Members of this group can access performance counter data locally and remotely</td></tr><tr><td><code>Performance Log Users</code></td><td>0</td><td>Members of this group may schedule logging of performance counters, enable trace</td></tr><tr><td><code>Distributed COM Users</code></td><td>0</td><td>Members are allowed to launch, activate and use Distributed COM objects on this </td></tr><tr><td><code>IIS_IUSRS</code></td><td>1</td><td>Built-in group used by Internet Information Services.</td></tr><tr><td><code>Cryptographic Operators</code></td><td>0</td><td>Members are authorized to perform cryptographic operations.</td></tr><tr><td><code>Event Log Readers</code></td><td>0</td><td>Members of this group can read event logs from local machine</td></tr><tr><td><code>Certificate Service DCOM Access</code></td><td>0</td><td>Members of this group are allowed to connect to Certification Authorities in the</td></tr><tr><td><code>RDS Remote Access Servers</code></td><td>0</td><td>Servers in this group enable users of RemoteApp programs and personal virtual de</td></tr><tr><td><code>RDS Endpoint Servers</code></td><td>0</td><td>Servers in this group run virtual machines and host sessions where users RemoteA</td></tr><tr><td><code>RDS Management Servers</code></td><td>0</td><td>Servers in this group can perform routine administrative actions on servers runn</td></tr><tr><td><code>Hyper-V Administrators</code></td><td>0</td><td>Members of this group have complete and unrestricted access to all features of H</td></tr><tr><td><code>Access Control Assistance Operators</code></td><td>0</td><td>Members of this group can remotely query authorization attributes and permission</td></tr><tr><td><code>Remote Management Users</code></td><td>0</td><td>Members of this group can access WMI resources over management protocols (such a</td></tr><tr><td><code>Storage Replica Administrators</code></td><td>0</td><td>Members of this group have complete and unrestricted access to all features of S</td></tr><tr><td><code>Domain Computers</code></td><td>0</td><td>All workstations and servers joined to the domain</td></tr><tr><td><code>Domain Controllers</code></td><td>0</td><td>All domain controllers in the domain</td></tr><tr class="priv"><td><code>Schema Admins</code></td><td>1</td><td>Designated administrators of the schema</td></tr><tr class="priv"><td><code>Enterprise Admins</code></td><td>1</td><td>Designated administrators of the enterprise</td></tr><tr><td><code>Cert Publishers</code></td><td>0</td><td>Members of this group are permitted to publish certificates to the directory</td></tr><tr class="priv"><td><code>Domain Admins</code></td><td>1</td><td>Designated administrators of the domain</td></tr><tr><td><code>Domain Users</code></td><td>0</td><td>All domain users</td></tr><tr><td><code>Domain Guests</code></td><td>0</td><td>All domain guests</td></tr><tr class="priv"><td><code>Group Policy Creator Owners</code></td><td>1</td><td>Members in this group can modify group policy for the domain</td></tr><tr><td><code>RAS and IAS Servers</code></td><td>0</td><td>Servers in this group can access remote access properties of users</td></tr><tr><td><code>Server Operators</code></td><td>0</td><td>Members can administer domain servers</td></tr><tr class="priv"><td><code>Account Operators</code></td><td>0</td><td>Members can administer domain user and group accounts</td></tr><tr><td><code>Pre-Windows 2000 Compatible Access</code></td><td>1</td><td>A backward compatibility group which allows read access on all users and groups </td></tr><tr><td><code>Incoming Forest Trust Builders</code></td><td>0</td><td>Members of this group can create incoming, one-way trusts to this forest</td></tr><tr><td><code>Windows Authorization Access Group</code></td><td>1</td><td>Members of this group have access to the computed tokenGroupsGlobalAndUniversal </td></tr><tr><td><code>Terminal Server License Servers</code></td><td>0</td><td>Members of this group can update user accounts in Active Directory with informat</td></tr><tr><td><code>Allowed RODC Password Replication Group</code></td><td>0</td><td>Members in this group can have their passwords replicated to all read-only domai</td></tr><tr><td><code>Denied RODC Password Replication Group</code></td><td>8</td><td>Members in this group cannot have their passwords replicated to any read-only do</td></tr><tr><td><code>Read-only Domain Controllers</code></td><td>0</td><td>Members of this group are Read-Only Domain Controllers in the domain</td></tr><tr><td><code>Enterprise Read-only Domain Controllers</code></td><td>0</td><td>Members of this group are Read-Only Domain Controllers in the enterprise</td></tr><tr><td><code>Cloneable Domain Controllers</code></td><td>0</td><td>Members of this group that are domain controllers may be cloned.</td></tr><tr class="priv"><td><code>Protected Users</code></td><td>0</td><td>Members of this group are afforded additional protections against authentication</td></tr><tr><td><code>Key Admins</code></td><td>0</td><td>Members of this group can perform administrative actions on key objects within t</td></tr><tr><td><code>Enterprise Key Admins</code></td><td>0</td><td>Members of this group can perform administrative actions on key objects within t</td></tr><tr><td><code>DnsAdmins</code></td><td>0</td><td>DNS Administrators Group</td></tr><tr><td><code>DnsUpdateProxy</code></td><td>0</td><td>DNS clients who are permitted to perform dynamic updates on behalf of some other</td></tr><tr><td><code>IT</code></td><td>2</td><td></td></tr><tr><td><code>HR</code></td><td>1</td><td></td></tr><tr><td><code>Finance</code></td><td>1</td><td></td></tr><tr><td><code>HelpDesk</code></td><td>1</td><td></td></tr></tbody></table></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>🔍 Security Checks Reference — All 50 Controls</h2>
+  <p style="color:var(--t2);font-size:.85rem;margin-bottom:1rem">
+    <span style="color:#da3633;font-weight:600">Red rows</span> = findings detected in this scan.
+  </p>
+  <div class="checks-filter">
+    <button class="cf-btn on" onclick="filterChecks(this,'all')">All (50)</button>
+    <button class="cf-btn" onclick="filterChecks(this,'kerberos')">Kerberos</button>
+    <button class="cf-btn" onclick="filterChecks(this,'password')">Password Policy</button>
+    <button class="cf-btn" onclick="filterChecks(this,'privileged')">Privileged Accounts</button>
+    <button class="cf-btn" onclick="filterChecks(this,'service')">Service Accounts</button>
+    <button class="cf-btn" onclick="filterChecks(this,'hygiene')">Account Hygiene</button>
+    <button class="cf-btn" onclick="filterChecks(this,'system')">System Security</button>
+    <button class="cf-btn" onclick="filterChecks(this,'domain')">Domain Config</button>
+  </div>
+  <div class="tw" style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;overflow:hidden">
+    <table id="checks-tbl">
+      <thead><tr><th>ID</th><th>Control</th><th>Category</th><th>Severity</th><th>Exploitable By</th><th>Detection Source</th><th>Status</th></tr></thead>
+      <tbody><tr class="check-found">
+  <td><code>AD-001</code></td><td>AS-REP Roasting</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → userAccountControl (0x400000)</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-002</code></td><td>Kerberoasting — SPN Accounts</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → servicePrincipalName</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-003</code></td><td>Unconstrained Kerberos Delegation</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → userAccountControl (0x080000)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-004</code></td><td>Constrained Delegation Misconfiguration</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → msDS-AllowedToDelegateTo</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-005</code></td><td>krbtgt Password Age — Golden Ticket Risk</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → krbtgt → pwdLastSet</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-006</code></td><td>Minimum Password Length < 14</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → minPwdLength</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-007</code></td><td>Password Complexity Disabled</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → pwdProperties (bit 1)</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-008</code></td><td>Insufficient Password History</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Any authenticated user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → pwdHistoryLength</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-009</code></td><td>Account Lockout Not Configured</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → lockoutThreshold = 0</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-010</code></td><td>Lockout Observation Window Too Short</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → lockoutObservationWindow</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-011</code></td><td>Lockout Duration Too Short</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → lockoutDuration</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-012</code></td><td>Maximum Password Age Unlimited</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Any authenticated user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → maxPwdAge</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-013</code></td><td>Fine-Grained Password Policy Missing</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → msDS-PasswordSettingsContainer</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-014</code></td><td>Excessive Domain Admins (>5)</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Domain Admins → member count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-015</code></td><td>Default Administrator Active & Not Renamed</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user Administrator → enabled</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-016</code></td><td>Disabled Accounts in Privileged Groups</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → privileged groups + UAC cross-check</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-017</code></td><td>Guest Account Enabled</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Anonymous / unauthenticated</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user Guest → userAccountControl</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-018</code></td><td>Schema Admins Group Non-Empty</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Schema Admins → member count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-019</code></td><td>Enterprise Admins Group Non-Empty</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Enterprise Admins → member count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-020</code></td><td>Admin Accounts Without Description</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → users with admin in name → description</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-021</code></td><td>Service Accounts in Privileged Groups</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → privileged groups + svc_ cross-check</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-022</code></td><td>Undocumented Service Accounts</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → svc_ accounts → description = empty</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-023</code></td><td>Service Accounts — Password Never Expires</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → svc_ accounts → UAC (0x10000)</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-024</code></td><td>Shared / Generic Service Accounts</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → accounts with shared/common/generic</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-025</code></td><td>Stale Accounts — Inactive 90+ Days</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → lastLogon (>90 days)</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-026</code></td><td>Password Never Expires — User Accounts</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → UAC (DONT_EXPIRE_PASSWORD)</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-027</code></td><td>Credentials in Account Description Field</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → description (keyword: pass/pwd/secret)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-028</code></td><td>High Failed Login Count (>=5)</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → badPwdCount >= 5</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-029</code></td><td>Accounts That Have Never Logged On</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → lastLogon = 0</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-030</code></td><td>krbtgt Password Never Changed</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → krbtgt → pwdLastSet = 0</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-031</code></td><td>Passwords Older Than 180 Days</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → pwdLastSet (>180 days)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-032</code></td><td>Weak Kerberos Encryption (RC4/DES)</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → UAC (DONT_REQ_PREAUTH flag)</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-033</code></td><td>End-of-Life Operating Systems</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → computer → operatingSystem (EOL match)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-034</code></td><td>Unknown Patch Status</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → computer → operatingSystemVersion (empty)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-035</code></td><td>WinRM Enabled on Domain Controller</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">nmap → port 5985/5986 on DC IP</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-036</code></td><td>SMBv1 Risk on Legacy Systems</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">nmap → port 445 + LDAP → EOL computers</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-037</code></td><td>Anonymous LDAP Bind Possible</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Anonymous / unauthenticated</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → anonymous bind attempt</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-038</code></td><td>Excessive Number of GPOs (>20)</td>
+  <td><span class="fcat">Group Policy</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → groupPolicyContainer count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-039</code></td><td>Empty / Unused GPOs</td>
+  <td><span class="fcat">Group Policy</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → groupPolicyContainer → no linked OUs</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-040</code></td><td>Bidirectional Domain Trusts</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → trustedDomain → trustDirection = 3</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-041</code></td><td>Domain Functional Level Below 2016</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → msDS-Behavior-Version</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-042</code></td><td>AD Recycle Bin Not Enabled</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Optional Features → Recycle Bin</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-043</code></td><td>Protected Users Group Empty</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Protected Users group → member count = 0</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-044</code></td><td>Anonymous LDAP Enumeration Possible</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Anonymous / unauthenticated</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → anonymous query on base DN</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-045</code></td><td>Shadow Admin Accounts Detected</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → adminCount=1 attribute cross-check</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-046</code></td><td>Reversible Encryption Enabled</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → UAC (ADS_UF_ENCRYPTED_TEXT_PASSWORD)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-047</code></td><td>DC Running End-of-Life OS</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → DC computer objects → operatingSystem</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-048</code></td><td>DC Not Owned by Domain Admins</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → DC objects → nTSecurityDescriptor</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-049</code></td><td>High Password Spray Attack Risk</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → lockoutThreshold=0 + minPwdLength<8</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-050</code></td><td>Nested Groups in Privileged Groups</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → privileged groups → group objects nested</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr></tbody>
+    </table>
+  </div>
+</section>
+
+</div>
+
+<div class="pdf-btn">
+  <button onclick="window.print()">🖨 Save as PDF / Print</button>
+</div>
+
+<!-- Pie Tooltip -->
+<div id="pie-tt" style="
+  position:fixed;display:none;z-index:9999;
+  background:#21262d;border:1px solid #58a6ff;border-radius:8px;
+  padding:.6rem .9rem;pointer-events:none;
+  box-shadow:0 4px 20px rgba(0,0,0,.6);min-width:140px">
+  <div id="pie-tt-cat" style="font-weight:700;font-size:.9rem;margin-bottom:.25rem"></div>
+  <div id="pie-tt-cnt" style="color:#8b949e;font-size:.82rem"></div>
+  <div id="pie-tt-pct" style="color:#8b949e;font-size:.82rem"></div>
+</div>
+
+<footer>ADScan v2.0 — Active Directory Security Analyzer &nbsp;|&nbsp; Kali Linux &nbsp;|&nbsp; 05.05.2026 10:58</footer>
+
+<script>
+function tog(h){h.closest('.finding').classList.toggle('open')}
+function tab(el,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-p').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');document.getElementById(id).classList.add('on');
+}
+function filterChecks(btn,cat){
+  document.querySelectorAll('.cf-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('#checks-tbl tbody tr').forEach(r=>{
+    if(cat==='all'){r.style.display='';return;}
+    const c=r.cells[2]?.textContent?.toLowerCase()||'';
+    r.style.display=c.includes(cat)?'':'none';
+  });
+}
+function scrollToFinding(id){
+  const el=document.getElementById(id);
+  if(el){el.classList.add('open');el.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+document.querySelectorAll('.finding').forEach((f,i)=>{if(i<2)f.classList.add('open')});
+</script>
+</body></html>

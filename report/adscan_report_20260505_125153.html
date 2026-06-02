@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADScan Report — lab.local</title>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;--t:#e6edf3;--t2:#8b949e;--brd:#30363d;--accent:#58a6ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);line-height:1.6;font-size:15px}
+code{font-family:monospace;font-size:.85em;color:#79c0ff}
+h2{font-size:1.05rem;font-weight:600;border-left:3px solid var(--accent);padding-left:.7rem;margin-bottom:1rem}
+section{margin-bottom:2.5rem}
+header{background:#161b22;border-bottom:2px solid #da3633;padding:1.5rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.hl h1{font-size:1.6rem;color:#f85149;font-weight:800}
+.hl h1 span{color:var(--t2);font-size:1rem;font-weight:400;margin-left:.5rem}
+.hl p{color:var(--t2);font-size:.82rem;margin-top:.2rem}
+.hr .domain{font-size:1rem;font-weight:600;color:var(--accent)}
+.hr .dt{font-size:.8rem;color:var(--t2);margin-top:.2rem}
+.wrap{max-width:1400px;margin:0 auto;padding:2rem 2.5rem}
+
+/* ES */
+.es-box{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:1.5rem;display:flex;gap:2rem;flex-wrap:wrap}
+.es-score-col{display:flex;flex-direction:column;align-items:center;gap:.9rem;min-width:200px}
+.es-circle{width:100px;height:100px;border-radius:50%;border:4px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto}
+.es-num{font-size:1.8rem;font-weight:800;line-height:1}
+.es-den{font-size:.8rem;color:var(--t2)}
+.es-grade{font-size:1.5rem;font-weight:800}
+.es-glbl{font-size:.8rem;font-weight:600}
+.scope-badge{background:rgba(88,166,255,.12);border:1px solid #58a6ff;color:#58a6ff;border-radius:6px;padding:.3rem .7rem;font-size:.78rem;font-weight:700;text-align:center;white-space:nowrap}
+.es-slider{width:190px}
+.es-sl-labels{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;margin-bottom:.3rem}
+.es-sl-track{position:relative;height:8px;background:var(--bg4);border-radius:4px}
+.es-sl-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#da3633 0%,#e3b341 50%,#3fb950 100%)}
+.es-sl-thumb{position:absolute;top:-6px;width:20px;height:20px;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.6)}
+.es-sl-mm{display:flex;justify-content:space-between;font-size:.72rem;color:var(--t2);margin-top:.35rem}
+.es-counts{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;width:100%}
+.es-cnt{background:var(--bg3);border:1px solid;border-radius:8px;padding:.45rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.es-cnt span:last-child{font-size:.72rem;color:var(--t2)}
+.es-info-col{flex:1;min-width:280px}
+.es-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:.35rem .75rem}
+.es-lbl{font-size:.72rem;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.es-val{font-size:.88rem;color:var(--t);font-weight:500;margin-top:.1rem}
+.es-finding{display:flex;align-items:flex-start;gap:.75rem;padding:.55rem 0;border-bottom:1px solid var(--brd)}
+.es-finding:last-child{border-bottom:none}
+
+/* Charts */
+.charts-wrap{display:flex;gap:1.5rem;flex-wrap:wrap}
+.chart-box{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:1.5rem;flex:1;min-width:280px}
+.chart-title{font-size:.9rem;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
+.pie-container{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.pie-slice{cursor:pointer;transition:transform .15s,filter .15s}
+.pie-legend{display:flex;flex-direction:column;gap:.5rem}
+.pie-leg{display:flex;align-items:center;gap:.6rem;font-size:.88rem}
+.pie-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.pie-name{flex:1;color:var(--t)}
+.pie-num{font-weight:700;color:var(--t);min-width:20px;text-align:right}
+.pie-pct{font-size:.78rem;min-width:36px;text-align:right}
+
+/* Bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:.85rem;padding-top:.25rem}
+.bar-row{display:flex;align-items:center;gap:.75rem}
+.bar-label{font-size:.78rem;font-weight:700;width:70px;text-align:right;color:var(--t2)}
+.bar-track{flex:1;background:var(--bg4);border-radius:4px;height:28px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;
+           justify-content:flex-end;padding-right:.5rem;
+           transition:width .6s ease;min-width:28px}
+.bar-val{font-size:.82rem;font-weight:700;color:#fff}
+
+/* Stats */
+.scards{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.7rem}
+.scard{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:.9rem;text-align:center}
+.snum{font-size:2rem;font-weight:800;line-height:1}
+.slbl{color:var(--t2);font-size:.73rem;margin-top:.3rem}
+.dcbox{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:1.25rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.dcip{font-size:1.2rem;font-weight:700;color:var(--accent)}
+.dclbl{color:var(--t2);font-size:.8rem;margin-bottom:.3rem}
+.pt{display:inline-block;background:var(--bg3);border:1px solid var(--brd);border-radius:5px;padding:.15rem .5rem;margin:.2rem;font-size:.78rem}
+.polcard{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;overflow:hidden}
+.polcard table{width:100%}
+.polcard td{padding:.55rem 1rem;border-top:1px solid var(--brd);font-size:.9rem}
+.polcard tr:first-child td{border-top:none}
+.bad{color:#f85149;font-weight:600}
+
+/* Findings */
+.finding{border-radius:10px;margin-bottom:.65rem;border:1px solid var(--brd);overflow:hidden}
+.finding.critical{border-left:4px solid #da3633}
+.finding.high{border-left:4px solid #f0883e}
+.finding.medium{border-left:4px solid #e3b341}
+.finding.low{border-left:4px solid #3fb950}
+.fh{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1.2rem;cursor:pointer;background:var(--bg2)}
+.fh:hover{background:var(--bg3)}
+.fhl{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0}
+.fhr{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.fid{color:var(--t2);font-size:.78rem;flex-shrink:0}
+.ftitle{font-weight:600;font-size:.95rem}
+.fcat{font-size:.72rem;color:var(--t2);background:var(--bg4);padding:.1rem .4rem;border-radius:4px;white-space:nowrap}
+.chev{color:var(--t2);transition:transform .2s}
+.finding.open .chev{transform:rotate(180deg)}
+.fb{display:none;padding:1rem 1.2rem 1.2rem;background:var(--bg2);border-top:1px solid var(--brd)}
+.finding.open .fb{display:block}
+.fsec{margin-top:.9rem}
+.flab{font-size:.8rem;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem}
+.fsec p{color:var(--t2);font-size:.9rem}
+.aff{margin:.35rem 0 0 1.2rem;color:var(--t2);font-size:.85rem;font-family:monospace}
+.fix{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.2);border-radius:6px;padding:.85rem}
+.fix p{color:#7ee787!important}
+.ep-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .7rem;border-radius:5px;border:1px solid;font-size:.78rem;font-weight:600;vertical-align:middle;line-height:1.4}
+.badge{display:inline-flex;align-items:center;gap:.2rem;padding:.15rem .5rem;border-radius:4px;font-size:.72rem;font-weight:700;vertical-align:middle;white-space:nowrap}
+.badge.critical{background:#3d1212;color:#ff7b72;font-size:.75rem}
+.badge.high{background:#3d2200;color:#ffa657;border-left:3px solid #f0883e}
+.badge.medium{background:#3d3000;color:#e3b341}
+.badge.low{background:#0d4429;color:#7ee787;border-left:3px solid #3fb950}
+.badge.info{background:#1e3a5f;color:#93c5fd}
+.tag{display:inline-flex;align-items:center;gap:.2rem;padding:.12rem .5rem;border-radius:4px;font-size:.74rem;font-weight:600;margin:.1rem;vertical-align:middle;line-height:1.4}
+.tag.ok{background:#0d4429;color:#3fb950}
+.tag.off{background:#1c2128;color:#6e7681}
+.tag.warn{background:#3d2b00;color:#e3b341}
+.tag.crit{background:#3d1212;color:#f85149}
+
+/* Remediation */
+.rem-item{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;margin-bottom:.75rem;overflow:hidden}
+.rem-header{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.2rem;background:var(--bg3)}
+.rem-num{color:var(--t2);font-size:.82rem;font-weight:700;flex-shrink:0}
+.rem-title{flex:1;font-weight:600;font-size:.95rem}
+.rem-fix{padding:.85rem 1.2rem;color:#7ee787;font-size:.88rem;background:rgba(63,185,80,.06);border-top:1px solid var(--brd)}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--brd);margin-bottom:1rem;overflow-x:auto}
+.tab{padding:.5rem 1rem;cursor:pointer;font-size:.88rem;color:var(--t2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-p{display:none}
+.tab-p.on{display:block}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{background:var(--bg3);padding:.6rem .75rem;text-align:left;font-size:.76rem;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;vertical-align:middle}
+td{padding:.5rem .75rem;border-top:1px solid var(--brd);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.015)}
+tr.priv td{background:rgba(218,54,51,.06)}
+tr.check-found td{background:rgba(218,54,51,.04)}
+.empty{color:var(--t2);font-style:italic;padding:.5rem}
+.checks-filter{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.cf-btn{background:var(--bg3);border:1px solid var(--brd);color:var(--t2);padding:.3rem .75rem;border-radius:5px;cursor:pointer;font-size:.8rem}
+.cf-btn.on{background:var(--accent);color:#000;border-color:var(--accent)}
+.pdf-btn{text-align:center;margin:1.5rem 0}
+.pdf-btn button{background:#1f6feb;color:#fff;border:none;padding:.7rem 2rem;border-radius:8px;font-size:.95rem;cursor:pointer;font-family:inherit}
+footer{text-align:center;padding:1.5rem;color:var(--t2);font-size:.8rem;border-top:1px solid var(--brd)}
+
+/* PRINT WHITE THEME */
+@media print{
+  :root{--bg:#fff;--bg2:#f8f9fa;--bg3:#e9ecef;--bg4:#dee2e6;--t:#212529;--t2:#6c757d;--brd:#dee2e6;--accent:#0d6efd}
+  body{background:#fff;color:#212529;font-size:13px}
+  header{background:#fff;border-bottom:2px solid #dc3545}
+  .hl h1{color:#dc3545}
+  .pdf-btn,.tabs,.checks-filter{display:none!important}
+  .fb,.tab-p{display:block!important}
+  .finding{break-inside:avoid}
+  .fh{background:#f8f9fa}
+  .badge.critical{background:#f8d7da;color:#842029}
+  .badge.high{background:#fff3cd;color:#664d03}
+  .badge.medium{background:#fff3cd;color:#664d03}
+  .badge.low{background:#d1e7dd;color:#0a3622}
+  .tag.ok{background:#d1e7dd;color:#0a3622}
+  .tag.crit{background:#f8d7da;color:#842029}
+  .tag.warn{background:#fff3cd;color:#664d03}
+  .fix{background:#d1e7dd;border-color:#a3cfbb}
+  .fix p{color:#0a3622!important}
+  .rem-fix{color:#0a3622;background:#d1e7dd}
+  .bar-val{color:#212529}
+  code{color:#0d6efd}
+  tr.check-found td{background:#f8d7da}
+  tr.priv td{background:#f8d7da}
+  .bad{color:#dc3545}
+  h2{color:#212529;border-left-color:#0d6efd}
+  section{page-break-inside:avoid}
+}
+</style></head><body>
+
+<header>
+  <div class="hl">
+    <h1>ADScan <span>Active Directory Security Analyzer</span></h1>
+    <p>Active Directory Security Assessment Report</p>
+  </div>
+  <div class="hr">
+    <div class="domain">lab.local</div>
+    <div class="dt">05.05.2026 12:51</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+
+<section id="executive-summary">
+  <h2>📋 Executive Summary</h2>
+  <div class="es-box">
+    <div class="es-score-col">
+      <div class="scope-badge">🔍 Full Scan — 50/50 Controls</div>
+      <div class="es-circle" style="border-color:#e3b341">
+        <div class="es-num" style="color:#e3b341">73</div>
+        <div class="es-den">/100</div>
+      </div>
+      <div class="es-grade" style="color:#e3b341">Grade: C</div>
+      <div class="es-glbl" style="color:#e3b341">Fair</div>
+      <div class="es-slider">
+        <div class="es-sl-labels">
+          <span style="color:#da3633">F</span><span style="color:#f0883e">D</span>
+          <span style="color:#e3b341">C</span><span style="color:#58a6ff">B</span>
+          <span style="color:#3fb950">A</span>
+        </div>
+        <div class="es-sl-track">
+          <div class="es-sl-fill" style="width:73%"></div>
+          <div class="es-sl-thumb" style="left:calc(73% - 10px);background:#3fb950"></div>
+        </div>
+        <div class="es-sl-mm"><span>0</span><span style="color:#e3b341;font-weight:700">73</span><span>100</span></div>
+      </div>
+      <div class="es-counts">
+        <div class="es-cnt" style="border-color:#da3633"><span style="color:#da3633;font-size:1.4rem;font-weight:800">0</span><span>Critical</span></div>
+        <div class="es-cnt" style="border-color:#f0883e"><span style="color:#f0883e;font-size:1.4rem;font-weight:800">3</span><span>High</span></div>
+        <div class="es-cnt" style="border-color:#e3b341"><span style="color:#e3b341;font-size:1.4rem;font-weight:800">2</span><span>Medium</span></div>
+        <div class="es-cnt" style="border-color:#3fb950"><span style="color:#3fb950;font-size:1.4rem;font-weight:800">0</span><span>Low</span></div>
+      </div>
+    </div>
+    <div class="es-info-col">
+      <div class="es-meta-grid">
+        <div><div class="es-lbl">Target Domain</div><div class="es-val">lab.local</div></div>
+        <div><div class="es-lbl">Domain Controller</div><div class="es-val">192.168.56.10</div></div>
+        <div><div class="es-lbl">Scan Date</div><div class="es-val">05.05.2026 12:51</div></div>
+        <div><div class="es-lbl">Scan Duration</div><div class="es-val">0:00:14</div></div>
+        <div><div class="es-lbl">Total Findings</div><div class="es-val">5</div></div>
+        <div><div class="es-lbl">Checks Run</div><div class="es-val">50 / 50</div></div>
+        <div><div class="es-lbl">Analyst</div><div class="es-val">Administrator</div></div>
+        <div><div class="es-lbl">Tool</div><div class="es-val">ADScan v2.0</div></div>
+        <div style="grid-column:1/-1">
+          <div class="es-lbl">Scan Scope</div>
+          <div class="es-val" style="color:#58a6ff;font-weight:600">Full scan — all 50 controls executed</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="es-lbl">OVERALL ASSESSMENT</div>
+        <p style="color:var(--t2);font-size:.88rem;line-height:1.6;margin-top:.35rem">Assessment of <strong style='color:#58a6ff'>lab.local</strong> identified <strong style='color:#f0883e'>3 high</strong> severity findings.</p>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="es-lbl" style="margin-bottom:.5rem">TOP PRIORITY FINDINGS</div>
+        <div class="es-finding">
+          <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+          <div>
+            <div style="font-weight:600;font-size:.9rem">Minimum Password Length Below Recommended (< 14)</div>
+            <div style="color:var(--t2);font-size:.82rem;margin-top:.1rem">Current minimum is 0 characters. NIST recommends ≥14.</div>
+          </div></div><div class="es-finding">
+          <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+          <div>
+            <div style="font-weight:600;font-size:.9rem">Account Lockout Threshold Not Configured</div>
+            <div style="color:var(--t2);font-size:.82rem;margin-top:.1rem">No account lockout. Unlimited password guessing allowed (brute-force/spray).</div>
+          </div></div><div class="es-finding">
+          <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+          <div>
+            <div style="font-weight:600;font-size:.9rem">High Password Spray Attack Risk</div>
+            <div style="color:var(--t2);font-size:.82rem;margin-top:.1rem">No account lockout AND weak password policy.</div>
+          </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>📊 Inventory Overview</h2>
+  <div class="scards">
+    <div class="scard"><div class="snum" style="color:#e3b341">73<span style="font-size:.9rem">/100</span></div><div class="slbl">Score · <strong style="color:#e3b341">C</strong></div></div>
+    <div class="scard"><div class="snum" style="color:#da3633">0</div><div class="slbl">Critical</div></div>
+    <div class="scard"><div class="snum" style="color:#f0883e">3</div><div class="slbl">High</div></div>
+    <div class="scard"><div class="snum" style="color:#e3b341">2</div><div class="slbl">Medium</div></div>
+    <div class="scard"><div class="snum" style="color:#3fb950">0</div><div class="slbl">Low</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">0</div><div class="slbl">Users</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">0</div><div class="slbl">Groups</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">0</div><div class="slbl">Computers</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">0</div><div class="slbl">GPOs</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">0</div><div class="slbl">SPN Accounts</div></div>
+    <div class="scard"><div class="snum" style="color:var(--accent)">0</div><div class="slbl">AS-REP Vuln</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>📊 Risk Distribution</h2>
+  
+<div class="charts-wrap">
+
+  <!-- Pie Chart -->
+  <div class="chart-box">
+    <div class="chart-title">Findings by Category</div>
+    <div class="pie-container">
+      <svg id="pie-svg" viewBox="0 0 260 260" width="240" height="240" style="overflow:visible">
+        
+<path class="pie-slice" d="M130,130 L130.00,20.00 A110,110 0 1,1 129.81,20.00 Z"
+  fill="#da3633" stroke="#0d1117" stroke-width="2"
+  data-cat="Password Policy" data-cnt="5" data-pct="100%"
+  onmouseenter="pieHover(this,true,event)" onmouseleave="pieHover(this,false,event)">
+</path>
+        <!-- Donut hole -->
+        <circle cx="130" cy="130" r="55" fill="var(--bg2)" pointer-events="none"/>
+        <!-- Center text -->
+        <text id="pie-center-num" x="130" y="122" text-anchor="middle"
+              fill="var(--t)" font-size="22" font-weight="800">5</text>
+        <text id="pie-center-lbl" x="130" y="142" text-anchor="middle"
+              fill="var(--t2)" font-size="11">findings</text>
+
+      </svg>
+      <div class="pie-legend"><div class="pie-leg">
+  <span class="pie-dot" style="background:#da3633"></span>
+  <span class="pie-name">Password Policy</span>
+  <span class="pie-num">5</span>
+  <span class="pie-pct" style="color:#da3633">100%</span>
+</div></div>
+    </div>
+  </div>
+
+  <!-- Bar Chart -->
+  <div class="chart-box">
+    <div class="chart-title">Findings by Severity</div>
+    <div class="bar-chart">
+<div class="bar-row">
+  <div class="bar-label">CRITICAL</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:0%;background:#da3633">
+      <span class="bar-val">0</span>
+    </div>
+  </div>
+</div>
+<div class="bar-row">
+  <div class="bar-label">HIGH</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:100.0%;background:#f0883e">
+      <span class="bar-val">3</span>
+    </div>
+  </div>
+</div>
+<div class="bar-row">
+  <div class="bar-label">MEDIUM</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:66.66666666666666%;background:#e3b341">
+      <span class="bar-val">2</span>
+    </div>
+  </div>
+</div>
+<div class="bar-row">
+  <div class="bar-label">LOW</div>
+  <div class="bar-track">
+    <div class="bar-fill" style="width:0%;background:#3fb950">
+      <span class="bar-val">0</span>
+    </div>
+  </div>
+</div></div>
+  </div>
+
+</div>
+
+<script>
+function pieHover(el, enter, evt) {
+  const tt   = document.getElementById('pie-tt');
+  const cNum = document.getElementById('pie-center-num');
+  const cLbl = document.getElementById('pie-center-lbl');
+
+  if (enter) {
+    const cat  = el.getAttribute('data-cat');
+    const cnt  = el.getAttribute('data-cnt');
+    const pct  = el.getAttribute('data-pct');
+    const fill = el.getAttribute('fill');
+
+    // Pop slice
+    el.style.transform = 'scale(1.07)';
+    el.style.transformOrigin = '130px 130px';
+    el.style.filter = 'drop-shadow(0 0 10px ' + fill + 'aa)';
+
+    // Center text
+    cNum.textContent = pct;
+    cNum.setAttribute('fill', fill);
+    cLbl.textContent = cat;
+
+    // HTML tooltip
+    document.getElementById('pie-tt-cat').textContent = cat;
+    document.getElementById('pie-tt-cat').style.color = fill;
+    document.getElementById('pie-tt-cnt').textContent = 'Findings: ' + cnt;
+    document.getElementById('pie-tt-pct').textContent = 'Share: ' + pct;
+    tt.style.display = 'block';
+  } else {
+    el.style.transform = '';
+    el.style.filter    = '';
+    tt.style.display   = 'none';
+    cNum.textContent   = '5';
+    cNum.setAttribute('fill','var(--t)');
+    cLbl.textContent   = 'findings';
+  }
+}
+
+document.addEventListener('mousemove', function(e) {
+  const tt = document.getElementById('pie-tt');
+  if (tt.style.display === 'block') {
+    tt.style.left = (e.clientX + 16) + 'px';
+    tt.style.top  = (e.clientY - 10) + 'px';
+  }
+});
+</script>
+</section>
+
+<section>
+  <h2>🖥 Domain Controller</h2>
+  <div class="dcbox">
+    <div><div class="dclbl">IP Address</div><div class="dcip">192.168.56.10</div></div>
+    <div><div class="dclbl">Domain</div><div style="font-weight:600">lab.local</div></div>
+    <div><div class="dclbl">Open Ports</div><div>—</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>🔐 Password Policy</h2>
+  <div class="polcard"><table><tbody><tr><td><b>Min. Password Length</b></td><td>?</td></tr><tr><td><b>Password History</b></td><td>?</td></tr><tr><td><b>Complexity</b></td><td>?</td></tr><tr><td><b>Lockout Threshold</b></td><td class="bad">? ⚠</td></tr><tr><td><b>Max. Password Age</b></td><td>?</td></tr></tbody></table></div>
+</section>
+
+<section>
+  <h2>⚠ Security Findings (5)</h2>
+  
+<div class="finding high" id="AD-006">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-006</code><span class="ftitle">Minimum Password Length Below Recommended (< 14)</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Current minimum is 0 characters. NIST recommends ≥14.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → minPwdLength attribute</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Current: 0 chars (recommended: ≥14)</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>GPMC → Default Domain Policy → Password Policy → Minimum length: 14</p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-009">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-009</code><span class="ftitle">Account Lockout Threshold Not Configured</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>No account lockout. Unlimited password guessing allowed (brute-force/spray).</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → lockoutThreshold attribute (value: 0)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Default Domain Policy</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>GPMC → Account Lockout Policy: Threshold: 5, Window: 15min, Duration: 15min</p></div>
+  </div>
+</div>
+<div class="finding high" id="AD-049">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-049</code><span class="ftitle">High Password Spray Attack Risk</span></div>
+    <div class="fhr"><span class="badge high">🟠 HIGH</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>No account lockout AND weak password policy.<br>Domain is highly susceptible to automated password spray attacks.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#da3633;color:#da3633">⚡ External attacker (no creds)</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → lockoutThreshold=0 + minPwdLength<8 (combined risk)</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Domain-wide risk</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>1. Configure lockout (threshold:5, duration:15min)<br>2. Increase minimum password length to 14+<br>3. Enable password complexity</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-008">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-008</code><span class="ftitle">Insufficient Password History (< 24)</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Password history is 0. Users can reuse old passwords too quickly.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#f0883e;color:#f0883e">⚡ Any authenticated user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → pwdHistoryLength attribute</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Current: 0 (recommended: 24)</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>GPMC → Password Policy → Enforce password history: 24</p></div>
+  </div>
+</div>
+<div class="finding medium" id="AD-012">
+  <div class="fh" onclick="tog(this)">
+    <div class="fhl"><code class="fid">AD-012</code><span class="ftitle">Maximum Password Age Unlimited or Unknown</span></div>
+    <div class="fhr"><span class="badge medium">🟡 MEDIUM</span><span class="fcat">Password Policy</span><span class="chev">▼</span></div>
+  </div>
+  <div class="fb">
+    <div class="fsec"><div class="flab">📋 Description</div><p>Passwords may never expire. Users never need to change credentials.</p></div>
+    <div class="fsec"><div class="flab">⚡ Exploitable By</div><div style="margin-top:.35rem"><span class="ep-badge" style="border-color:#f0883e;color:#f0883e">⚡ Any authenticated user</span></div></div>
+    <div class="fsec"><div class="flab">📍 Found In</div><p style="font-family:monospace;font-size:.85rem;color:#79c0ff">LDAP → domainDNS → maxPwdAge attribute</p></div>
+    <div class="fsec"><div class="flab">🎯 Affected (1)</div><ul class="aff"><li>Default Domain Policy</li></ul></div>
+    <div class="fsec fix"><div class="flab">🛠 Remediation</div><p>Set-ADDefaultDomainPasswordPolicy -MaxPasswordAge (New-TimeSpan -Days 90)</p></div>
+  </div>
+</div>
+</section>
+
+<section>
+  <h2>📋 Findings Overview</h2>
+  <div class="tw" style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;overflow:hidden">
+    <table>
+      <thead><tr><th>ID</th><th>Finding</th><th>Severity</th><th>Category</th><th>Affected</th><th>Detail</th></tr></thead>
+      <tbody><tr>
+  <td><code>AD-006</code></td>
+  <td>Minimum Password Length Below Recommended (< 14)</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-006" onclick="scrollToFinding('AD-006')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-009</code></td>
+  <td>Account Lockout Threshold Not Configured</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-009" onclick="scrollToFinding('AD-009')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-049</code></td>
+  <td>High Password Spray Attack Risk</td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-049" onclick="scrollToFinding('AD-049')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-008</code></td>
+  <td>Insufficient Password History (< 24)</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-008" onclick="scrollToFinding('AD-008')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr><tr>
+  <td><code>AD-012</code></td>
+  <td>Maximum Password Age Unlimited or Unknown</td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td style="text-align:center">1</td>
+  <td><a href="#AD-012" onclick="scrollToFinding('AD-012')" style="color:var(--accent);font-size:.82rem">View →</a></td>
+</tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>🛠 Remediation Summary</h2>
+  <p style="color:var(--t2);font-size:.85rem;margin-bottom:1rem">All remediation steps in priority order. Address Critical and High findings first.</p>
+  <div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#1</span>
+    <span class="rem-title">Minimum Password Length Below Recommended (< 14)</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">GPMC → Default Domain Policy → Password Policy → Minimum length: 14</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#2</span>
+    <span class="rem-title">Account Lockout Threshold Not Configured</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">GPMC → Account Lockout Policy: Threshold: 5, Window: 15min, Duration: 15min</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#3</span>
+    <span class="rem-title">High Password Spray Attack Risk</span>
+    <span class="badge high" style="flex-shrink:0">🟠 HIGH</span>
+  </div>
+  <div class="rem-fix">1. Configure lockout (threshold:5, duration:15min)<br>2. Increase minimum password length to 14+<br>3. Enable password complexity</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#4</span>
+    <span class="rem-title">Insufficient Password History (< 24)</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">GPMC → Password Policy → Enforce password history: 24</div>
+</div><div class="rem-item">
+  <div class="rem-header">
+    <span class="rem-num">#5</span>
+    <span class="rem-title">Maximum Password Age Unlimited or Unknown</span>
+    <span class="badge medium" style="flex-shrink:0">🟡 MEDIUM</span>
+  </div>
+  <div class="rem-fix">Set-ADDefaultDomainPasswordPolicy -MaxPasswordAge (New-TimeSpan -Days 90)</div>
+</div>
+</section>
+
+<section>
+  <h2>📁 Inventory</h2>
+  <div style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:1.25rem">
+    <div class="tabs">
+      <div class="tab on" onclick="tab(this,'tu')">Users (0)</div>
+      <div class="tab"    onclick="tab(this,'tc')">Computers (0)</div>
+      <div class="tab"    onclick="tab(this,'ts')">SPN / Kerberoasting (0)</div>
+      <div class="tab"    onclick="tab(this,'ta')">AS-REP Vulnerable (0)</div>
+      <div class="tab"    onclick="tab(this,'tg')">Groups (0)</div>
+    </div>
+    <div id="tu" class="tab-p on"><div class="tw"><table>
+      <thead><tr><th>Username</th><th>Status</th><th>Department</th><th>Title</th><th>Risk Flags</th></tr></thead>
+      <tbody><tr><td colspan=5>—</td></tr></tbody></table></div></div>
+    <div id="tc" class="tab-p"><div class="tw"><table>
+      <thead><tr><th>Computer</th><th>Operating System</th><th>DNS</th></tr></thead>
+      <tbody><tr><td colspan=3>—</td></tr></tbody></table></div></div>
+    <div id="ts" class="tab-p"><div class="tw">
+      <p style="color:var(--t2);font-size:.85rem;margin-bottom:.75rem">TGS tickets can be requested and cracked offline.</p>
+      <table><thead><tr><th>Account</th><th>Status</th><th>SPN Records</th></tr></thead>
+      <tbody><tr><td colspan=3>—</td></tr></tbody></table></div></div>
+    <div id="ta" class="tab-p"><div class="tw">
+      <p style="color:var(--t2);font-size:.85rem;margin-bottom:.75rem">AS-REP hash can be captured and cracked offline without credentials.</p>
+      <table><thead><tr><th>Account</th><th>Department</th><th>Group Memberships</th></tr></thead>
+      <tbody><tr><td colspan=3>Not detected</td></tr></tbody></table></div></div>
+    <div id="tg" class="tab-p"><div class="tw">
+      <p style="color:var(--t2);font-size:.85rem;margin-bottom:.75rem">Red rows: privileged groups.</p>
+      <table><thead><tr><th>Group</th><th>Members</th><th>Description</th></tr></thead>
+      <tbody><tr><td colspan=3>—</td></tr></tbody></table></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>🔍 Security Checks Reference — All 50 Controls</h2>
+  <p style="color:var(--t2);font-size:.85rem;margin-bottom:1rem">
+    <span style="color:#da3633;font-weight:600">Red rows</span> = findings detected in this scan.
+  </p>
+  <div class="checks-filter">
+    <button class="cf-btn on" onclick="filterChecks(this,'all')">All (50)</button>
+    <button class="cf-btn" onclick="filterChecks(this,'kerberos')">Kerberos</button>
+    <button class="cf-btn" onclick="filterChecks(this,'password')">Password Policy</button>
+    <button class="cf-btn" onclick="filterChecks(this,'privileged')">Privileged Accounts</button>
+    <button class="cf-btn" onclick="filterChecks(this,'service')">Service Accounts</button>
+    <button class="cf-btn" onclick="filterChecks(this,'hygiene')">Account Hygiene</button>
+    <button class="cf-btn" onclick="filterChecks(this,'system')">System Security</button>
+    <button class="cf-btn" onclick="filterChecks(this,'domain')">Domain Config</button>
+  </div>
+  <div class="tw" style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;overflow:hidden">
+    <table id="checks-tbl">
+      <thead><tr><th>ID</th><th>Control</th><th>Category</th><th>Severity</th><th>Exploitable By</th><th>Detection Source</th><th>Status</th></tr></thead>
+      <tbody><tr>
+  <td><code>AD-001</code></td><td>AS-REP Roasting</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → userAccountControl (0x400000)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-002</code></td><td>Kerberoasting — SPN Accounts</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → servicePrincipalName</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-003</code></td><td>Unconstrained Kerberos Delegation</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → userAccountControl (0x080000)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-004</code></td><td>Constrained Delegation Misconfiguration</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → msDS-AllowedToDelegateTo</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-005</code></td><td>krbtgt Password Age — Golden Ticket Risk</td>
+  <td><span class="fcat">Kerberos</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → krbtgt → pwdLastSet</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-006</code></td><td>Minimum Password Length < 14</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → minPwdLength</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-007</code></td><td>Password Complexity Disabled</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → pwdProperties (bit 1)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-008</code></td><td>Insufficient Password History</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Any authenticated user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → pwdHistoryLength</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-009</code></td><td>Account Lockout Not Configured</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → lockoutThreshold = 0</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-010</code></td><td>Lockout Observation Window Too Short</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → lockoutObservationWindow</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-011</code></td><td>Lockout Duration Too Short</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → lockoutDuration</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-012</code></td><td>Maximum Password Age Unlimited</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Any authenticated user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → maxPwdAge</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-013</code></td><td>Fine-Grained Password Policy Missing</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → msDS-PasswordSettingsContainer</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-014</code></td><td>Excessive Domain Admins (>5)</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Domain Admins → member count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-015</code></td><td>Default Administrator Active & Not Renamed</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user Administrator → enabled</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-016</code></td><td>Disabled Accounts in Privileged Groups</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → privileged groups + UAC cross-check</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-017</code></td><td>Guest Account Enabled</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Anonymous / unauthenticated</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user Guest → userAccountControl</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-018</code></td><td>Schema Admins Group Non-Empty</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Schema Admins → member count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-019</code></td><td>Enterprise Admins Group Non-Empty</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Enterprise Admins → member count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-020</code></td><td>Admin Accounts Without Description</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → users with admin in name → description</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-021</code></td><td>Service Accounts in Privileged Groups</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → privileged groups + svc_ cross-check</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-022</code></td><td>Undocumented Service Accounts</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → svc_ accounts → description = empty</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-023</code></td><td>Service Accounts — Password Never Expires</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → svc_ accounts → UAC (0x10000)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-024</code></td><td>Shared / Generic Service Accounts</td>
+  <td><span class="fcat">Service Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → accounts with shared/common/generic</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-025</code></td><td>Stale Accounts — Inactive 90+ Days</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → lastLogon (>90 days)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-026</code></td><td>Password Never Expires — User Accounts</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → UAC (DONT_EXPIRE_PASSWORD)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-027</code></td><td>Credentials in Account Description Field</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → description (keyword: pass/pwd/secret)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-028</code></td><td>High Failed Login Count (>=5)</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → badPwdCount >= 5</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-029</code></td><td>Accounts That Have Never Logged On</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → lastLogon = 0</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-030</code></td><td>krbtgt Password Never Changed</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → krbtgt → pwdLastSet = 0</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-031</code></td><td>Passwords Older Than 180 Days</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → user accounts → pwdLastSet (>180 days)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-032</code></td><td>Weak Kerberos Encryption (RC4/DES)</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → UAC (DONT_REQ_PREAUTH flag)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-033</code></td><td>End-of-Life Operating Systems</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → computer → operatingSystem (EOL match)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-034</code></td><td>Unknown Patch Status</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#f0883e">⚡ Local administrator</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → computer → operatingSystemVersion (empty)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-035</code></td><td>WinRM Enabled on Domain Controller</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">nmap → port 5985/5986 on DC IP</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-036</code></td><td>SMBv1 Risk on Legacy Systems</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">nmap → port 445 + LDAP → EOL computers</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-037</code></td><td>Anonymous LDAP Bind Possible</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Anonymous / unauthenticated</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → anonymous bind attempt</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-038</code></td><td>Excessive Number of GPOs (>20)</td>
+  <td><span class="fcat">Group Policy</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → groupPolicyContainer count</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-039</code></td><td>Empty / Unused GPOs</td>
+  <td><span class="fcat">Group Policy</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → groupPolicyContainer → no linked OUs</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-040</code></td><td>Bidirectional Domain Trusts</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → trustedDomain → trustDirection = 3</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-041</code></td><td>Domain Functional Level Below 2016</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → domainDNS → msDS-Behavior-Version</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-042</code></td><td>AD Recycle Bin Not Enabled</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge low">🟢 LOW</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Optional Features → Recycle Bin</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-043</code></td><td>Protected Users Group Empty</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → Protected Users group → member count = 0</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-044</code></td><td>Anonymous LDAP Enumeration Possible</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Anonymous / unauthenticated</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → anonymous query on base DN</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-045</code></td><td>Shadow Admin Accounts Detected</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → adminCount=1 attribute cross-check</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-046</code></td><td>Reversible Encryption Enabled</td>
+  <td><span class="fcat">Account Hygiene</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → UAC (ADS_UF_ENCRYPTED_TEXT_PASSWORD)</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-047</code></td><td>DC Running End-of-Life OS</td>
+  <td><span class="fcat">System Security</span></td>
+  <td><span class="badge critical">🔴 CRITICAL</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → DC computer objects → operatingSystem</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr>
+  <td><code>AD-048</code></td><td>DC Not Owned by Domain Admins</td>
+  <td><span class="fcat">Domain Config</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ Domain Admin</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → DC objects → nTSecurityDescriptor</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr><tr class="check-found">
+  <td><code>AD-049</code></td><td>High Password Spray Attack Risk</td>
+  <td><span class="fcat">Password Policy</span></td>
+  <td><span class="badge high">🟠 HIGH</span></td>
+  <td style="font-size:.78rem;color:#da3633">⚡ External attacker (no creds)</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → lockoutThreshold=0 + minPwdLength<8</td>
+  <td><span class="tag crit">⚠ FOUND</span></td>
+</tr><tr>
+  <td><code>AD-050</code></td><td>Nested Groups in Privileged Groups</td>
+  <td><span class="fcat">Privileged Accounts</span></td>
+  <td><span class="badge medium">🟡 MEDIUM</span></td>
+  <td style="font-size:.78rem;color:#e3b341">⚡ Low-privileged domain user</td>
+  <td style="font-family:monospace;font-size:.75rem;color:var(--t2)">LDAP → privileged groups → group objects nested</td>
+  <td><span class="tag ok">✓ PASS</span></td>
+</tr></tbody>
+    </table>
+  </div>
+</section>
+
+</div>
+
+<div class="pdf-btn">
+  <button onclick="window.print()">🖨 Save as PDF / Print</button>
+</div>
+
+<!-- Pie Tooltip -->
+<div id="pie-tt" style="
+  position:fixed;display:none;z-index:9999;
+  background:#21262d;border:1px solid #58a6ff;border-radius:8px;
+  padding:.6rem .9rem;pointer-events:none;
+  box-shadow:0 4px 20px rgba(0,0,0,.6);min-width:140px">
+  <div id="pie-tt-cat" style="font-weight:700;font-size:.9rem;margin-bottom:.25rem"></div>
+  <div id="pie-tt-cnt" style="color:#8b949e;font-size:.82rem"></div>
+  <div id="pie-tt-pct" style="color:#8b949e;font-size:.82rem"></div>
+</div>
+
+<footer>ADScan v2.0 — Active Directory Security Analyzer &nbsp;|&nbsp; Kali Linux &nbsp;|&nbsp; 05.05.2026 12:51</footer>
+
+<script>
+function tog(h){h.closest('.finding').classList.toggle('open')}
+function tab(el,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-p').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');document.getElementById(id).classList.add('on');
+}
+function filterChecks(btn,cat){
+  document.querySelectorAll('.cf-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('#checks-tbl tbody tr').forEach(r=>{
+    if(cat==='all'){r.style.display='';return;}
+    const c=r.cells[2]?.textContent?.toLowerCase()||'';
+    r.style.display=c.includes(cat)?'':'none';
+  });
+}
+function scrollToFinding(id){
+  const el=document.getElementById(id);
+  if(el){el.classList.add('open');el.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+document.querySelectorAll('.finding').forEach((f,i)=>{if(i<2)f.classList.add('open')});
+</script>
+</body></html>
